@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@300&display=swap");
+    </style>
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <img src="light.gif" alt="GIF" id="gif-image" />
+    <h1 class="h1">Hayen Bilişim</h1>
+    <h3 class="h3">Hayatınıza Enerji Katar!</h3>
+    <div id="app">
+      <div class="wrapper flex_box">
+        <form v-on:submit.prevent="handleSubmit">
+          <div class="input">
+            <label> İsim </label>
+            <input
+              class="name"
+              placeholder="İsminiz...?"
+              type="text"
+              v-model="formData.name"
+            />
+          </div>
+          <div class="input">
+            <label> Yorum </label>
+            <textarea
+              placeholder="Lütfen bizimle ilgili düşüncelerinizi yazınız..."
+              class="comment"
+              v-model="formData.comment"
+            ></textarea>
+          </div>
+          <div class="button_wrapper">
+            <button type="submit">Gönder</button>
+          </div>
+        </form>
+      </div>
+      <div class="cover"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+      new Vue({
+        el: "#app",
+        data: {
+          formData: {
+            name: "",
+            comment: "",
+          },
+          letterCount: 0,
+        },
+        methods: {
+          createGhostLetters(text, className) {
+            return text
+              .split("")
+              .map((letter) => {
+                return `
+              <div class="${className} ${letter === " " ? " blank" : ""}" >
+                ${letter}
+              </div>
+            `;
+              })
+              .join("");
+          },
+          createGhostDiv(target, className) {
+            if (!target) return;
+            const ghostDiv = document.createElement("div");
+            const targetSpec = target.getBoundingClientRect();
+            ghostDiv.classList.add("ghost");
+            ghostDiv.innerHTML = this.createGhostLetters(target, className);
+
+            ghostDiv.style.top = `${targetSpec.y}px`;
+            ghostDiv.style.left = `${targetSpec.x}px`;
+            ghostDiv.style.height = `${targetSpec.height}px`;
+            ghostDiv.style.width = `${targetSpec.width}px`;
+
+            document.querySelector(".cover").appendChild(ghostDiv);
+          },
+          setupGhostLetterMotion(target, className) {
+            this.createGhostDiv(target, className);
+
+            const letters = document.querySelectorAll(`.${className}`);
+            letters.forEach((letter, i) => {
+              const letterSpec = letter.getBoundingClientRect();
+
+              letter.style.top = `${letterSpec.y}px`;
+              letter.style.left = `${letterSpec.x}px`;
+              letter.style.color = "white";
+              letter.style.transition = "1s";
+
+              setTimeout(() => {
+                letter.style.position = "fixed";
+                letter.style.transition = "5s";
+                letter.style.top = `-${window.innerHeight / 2}px`;
+                letter.style.left = `${letterSpec.x + window.innerWidth / 2}px`;
+              }, (letters.length - i) * 150);
+            });
+            this.letterCount =
+              this.letterCount < letters.length
+                ? letters.length
+                : this.letterCount;
+          },
+          handleSubmit() {
+            const nameInput = document.querySelector(".name");
+            const commentInput = document.querySelector(".comment");
+            const form = document.querySelector("form");
+
+            form.classList.remove("fade_in");
+            form.classList.add("fade");
+            this.setupGhostLetterMotion(nameInput.value, "name_letter");
+            this.setupGhostLetterMotion(commentInput.value, "comment_letter");
+
+            setTimeout(() => {
+              form.classList.remove("fade");
+              form.classList.add("fade_in");
+              nameInput.placeholder = "your name...?";
+              commentInput.placeholder = "enter whatever you feel like...";
+              this.letterCount = 0;
+            }, 3000 + this.letterCount * 100);
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
